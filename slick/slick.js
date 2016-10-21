@@ -37,6 +37,8 @@
 
             var _ = this, dataSettings;
 
+            _.settings = settings;
+
             _.defaults = {
                 accessibility: true,
                 adaptiveHeight: false,
@@ -50,6 +52,9 @@
                 autoplaySpeed: 3000,
                 centerMode: false,
                 centerPadding: '50px',
+                classes: {
+                    slide: 'slick-slide'
+                },
                 cssEase: 'ease',
                 customPaging: function(slider, i) {
                     return $('<button type="button" data-role="none" role="button" tabindex="0" />').text(i + 1);
@@ -144,6 +149,10 @@
             dataSettings = $(element).data('slick') || {};
 
             _.options = $.extend({}, _.defaults, settings, dataSettings);
+
+            if (settings.slidesToShow && settings.slidesToShow == 'all') {
+                _.options.slidesToShow = _.$slider.children().length;
+            }
 
             _.currentSlide = _.options.initialSlide;
 
@@ -1939,12 +1948,25 @@
         _.listHeight = _.$list.height();
 
 
+        console.log(_.settings);
+
         if (_.options.vertical === false && _.options.variableWidth === false) {
             _.slideWidth = Math.ceil(_.listWidth / _.options.slidesToShow);
             _.$slideTrack.width(Math.ceil((_.slideWidth * _.$slideTrack.children('.slick-slide').length)));
 
-        } else if (_.options.variableWidth === true) {
+        } else if (_.options.variableWidth === true && _.settings.slidesToShow !== 'all') {
             _.$slideTrack.width(5000 * _.slideCount);
+
+        } else if (_.options.variableWidth === false && _.settings.slidesToShow == 'all') {
+            _.$slideTrack.width(_.options.slidesToShow * _.$slider.children().width());
+
+        } else if (_.settings.slidesToShow == 'all' && _.options.variableWidth === true) {
+            let width = 0;
+            for (let i = 0; i < _.$slider.find('.' + _.options.classes.slide).length; i++) {
+                width += _.$slider.find('.' + _.options.classes.slide).eq(i).width();
+            }
+            _.$slideTrack.width(width);
+
         } else {
             _.slideWidth = Math.ceil(_.listWidth);
             _.$slideTrack.height(Math.ceil((_.$slides.first().outerHeight(true) * _.$slideTrack.children('.slick-slide').length)));
